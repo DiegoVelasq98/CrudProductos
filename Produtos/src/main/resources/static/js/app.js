@@ -1,74 +1,56 @@
-// URL de la API
-const apiUrl = 'http://localhost:8082/api/v1/productos';
+const apiUrl = "http://localhost:8082/api/v1/productos";
 
+document.addEventListener("DOMContentLoaded", () => {
+    cargarProductos();
 
-function fetchProducts() {
-    fetch(apiUrl)
-        .then(response => response.json())
-        .then(data => {
-            const tableBody = document.getElementById('productsTable');
-            tableBody.innerHTML = ''; // Limpiar tabla antes de actualizar
+    const form = document.getElementById("addProductForm");
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
 
+        const producto = {
+            nombre: document.getElementById("nombre").value,
+            descripcion: document.getElementById("descripcion").value,
+            precio: parseFloat(document.getElementById("precio").value),
+            fechaRegistro: document.getElementById("fechaRegistro").value
+        };
 
-            data.forEach(product => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${product.idProducto}</td>
-                    <td>${product.nombre}</td>
-                    <td>${product.descripcion}</td>
-                    <td>${product.precio}</td>
-                    <td>${product.fechaRegistro}</td>
-                    <td>
-                        <button class="btn btn-warning" onclick="editProduct(${product.idProducto})">Editar</button>
-                        <button class="btn btn-danger" onclick="deleteProduct(${product.idProducto})">Eliminar</button>
-                    </td>
-                `;
-                tableBody.appendChild(row);
-            });
-        })
-        .catch(error => console.error('Error al obtener productos:', error));
-}
+        await fetch(apiUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(producto)
+        });
 
-
-window.onload = fetchProducts;
-
-
-document.getElementById('addProductForm').addEventListener('submit', function (event) {
-    event.preventDefault();
-
-    const product = {
-        nombre: document.getElementById('nombre').value,
-        descripcion: document.getElementById('descripcion').value,
-        precio: parseFloat(document.getElementById('precio').value),
-        fechaRegistro: document.getElementById('fechaRegistro').value
-    };
-
-    fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(product)
-    })
-        .then(response => response.json())
-        .then(() => {
-            fetchProducts(); // Recargar la lista de productos
-            document.getElementById('addProductModal').modal('hide'); // Cerrar modal
-        })
-        .catch(error => console.error('Error al agregar producto:', error));
+        form.reset();
+        cargarProductos();
+        const modal = bootstrap.Modal.getInstance(document.getElementById("addProductModal"));
+        modal.hide();
+    });
 });
 
-// Función para editar producto (por ejemplo, similar a agregar pero con un PUT)
-function editProduct(id) {
-    // Puedes implementar la lógica de edición aquí
-    console.log('Editar producto:', id);
+async function cargarProductos() {
+    const res = await fetch(apiUrl);
+    const data = await res.json();
+
+    const tabla = document.getElementById("productsTable");
+    tabla.innerHTML = "";
+
+    data.forEach(p => {
+        const fila = document.createElement("tr");
+        fila.innerHTML = `
+            <td>${p.idProducto}</td>
+            <td>${p.nombre}</td>
+            <td>${p.descripcion}</td>
+            <td>${p.precio}</td>
+            <td>${p.fechaRegistro}</td>
+            <td>
+                <button class="btn btn-danger btn-sm" onclick="eliminarProducto(${p.idProducto})">Eliminar</button>
+            </td>
+        `;
+        tabla.appendChild(fila);
+    });
 }
 
-// Función para eliminar producto
-function deleteProduct(id) {
-    fetch(`${apiUrl}/${id}`, {
-        method: 'DELETE'
-    })
-        .then(() => fetchProducts()) // Recargar productos después de eliminar
-        .catch(error => console.error('Error al eliminar producto:', error));
+async function eliminarProducto(id) {
+    await fetch(`${apiUrl}/${id}`, { method: "DELETE" });
+    cargarProductos();
 }

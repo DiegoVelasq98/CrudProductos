@@ -1,23 +1,15 @@
 body {
-  font-family: Arial, sans-serif;
-  margin: 30px;
-  background-color: #f5f5f5;
+  background-color: #f8f9fa;
 }
 
-form input, form button {
-  padding: 10px;
-  margin-right: 10px;
-  margin-bottom: 10px;
+h1 {
+  color: #343a40;
 }
 
-button {
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  cursor: pointer;
+.table th, .table td {
+  vertical-align: middle;
 }
 
-ul {
-  list-style: none;
-  padding: 0;
+.modal-content {
+  border-radius: 10px;
 }
