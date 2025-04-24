@@ -24,39 +24,74 @@ public class ProductoService {
         this.productoRepository = productoRepository;
     }
 
-    public List<Producto> getProducto() {
-
-    return this.productoRepository.findAll();
-}
-
-
-public ResponseEntity<Object>newProducto(Producto producto) {
-
-    Optional<Producto> res = productoRepository.findProductoByNombre(producto.getNombre());
-    datos = new  HashMap<>();
-    if (res.isPresent() && producto.getIdProducto()==null){
-        datos.put("ERROR",true);
-        datos.put("Message", "Ya existe ese cliente");
-        return new ResponseEntity<>(datos, HttpStatus.CONFLICT);
-
+    public List<Producto> getProductos() {
+        return this.productoRepository.findAll();
     }
-    datos.put("Message", "Se guardo correctamente");
-
-    if(producto.getIdProducto()!=null){
-        datos.put("Message", "Se actualizo el producto");
 
 
+    public Optional<Producto> getProductoById(Long id) {
+        return this.productoRepository.findById(id);
     }
-    productoRepository.save(producto);
-    datos.put("data", producto);
-
-    return new ResponseEntity<>(datos, HttpStatus.CREATED);
 
 
 
-}
+    public ResponseEntity<Object> guardarProducto(Producto producto) {
+        datos = new HashMap<>();
 
-public ResponseEntity<Object> eliminarProducto(Long idProducto) {
+
+        Optional<Producto> res = productoRepository.findProductoByNombre(producto.getNombre());
+        if (res.isPresent() && producto.getIdProducto() == null) {
+            datos.put("ERROR", true);
+            datos.put("Message", "Ya existe ese producto");
+            return new ResponseEntity<>(datos, HttpStatus.CONFLICT);
+        }
+
+
+        productoRepository.save(producto);
+        datos.put("Message", "Producto guardado correctamente");
+        datos.put("data", producto);
+        return new ResponseEntity<>(datos, HttpStatus.CREATED);
+    }
+
+
+    public ResponseEntity<Object> actualizaProducto(Long id, Producto producto) {
+        datos = new HashMap<>();
+
+
+        Optional<Producto> productoExistente = productoRepository.findById(id);
+
+        if (!productoExistente.isPresent()) {
+            datos.put("ERROR", true);
+            datos.put("Message", "Producto no encontrado");
+            return new ResponseEntity<>(datos, HttpStatus.NOT_FOUND);
+        }
+
+        Producto prod = productoExistente.get();
+
+
+        if (producto.getNombre() != null) {
+            prod.setNombre(producto.getNombre());
+        }
+        if (producto.getDescripcion() != null) {
+            prod.setDescripcion(producto.getDescripcion());
+        }
+        if (producto.getPrecio() != 0.0f) {
+            prod.setPrecio(producto.getPrecio());
+        }
+        if (producto.getFechaRegistro() != null) {
+            prod.setFechaRegistro(producto.getFechaRegistro());
+        }
+
+
+        productoRepository.save(prod);
+
+        datos.put("Message", "Producto actualizado correctamente");
+        datos.put("data", prod);
+        return new ResponseEntity<>(datos, HttpStatus.OK);
+    }
+
+
+    public ResponseEntity<Object> eliminarProducto(Long idProducto) {
         datos= new HashMap<>();
         boolean existe = this.productoRepository.existsById(idProducto);
         if (!existe) {
