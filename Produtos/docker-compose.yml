@@ -1,0 +1,36 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: db_productos
+    environment:
+      POSTGRES_DB: db_productos
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin123
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_data_productos:/var/lib/postgresql/data
+    networks:
+      - red_interna
+
+  app:
+    build: .
+    container_name: springboot-productos
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: db_productos
+      DB_USERNAME: postgres
+      DB_PASSWORD: admin123
+    ports:
+      - "8082:8081"
+    depends_on:
+      - postgres
+    networks:
+      - red_interna
+
+volumes:
+  postgres_data_productos:
+
+networks:
+  red_interna:
